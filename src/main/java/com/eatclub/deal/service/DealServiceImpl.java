@@ -3,10 +3,23 @@ package com.eatclub.deal.service;
 import com.eatclub.deal.entity.Restaurants;
 import com.eatclub.deal.model.response.DealsResponse;
 import com.eatclub.deal.model.response.PeakTimeResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 @Service
 public class DealServiceImpl implements DealService {
+
+  private final RestClient restClient;
+
+  @Value("${restaurants.api.url}")
+  private String url;
+
+  @Autowired
+  public DealServiceImpl(RestClient restClient) {
+    this.restClient = restClient;
+  }
 
   @Override
   public DealsResponse getDeals(String timeOfDay) {
@@ -23,6 +36,9 @@ public class DealServiceImpl implements DealService {
   }
 
   private Restaurants getData() {
-    return Restaurants.builder().build();
+    return restClient.get()
+        .uri(url)
+        .retrieve()
+        .body(Restaurants.class);
   }
 }
