@@ -1,6 +1,6 @@
 package com.eatclub.deal.controller;
 
-import static com.eatclub.deal.util.TimeUtils.convertClock;
+import static com.eatclub.deal.util.TimeUtils.convertTo24HourClock;
 
 import com.eatclub.deal.model.response.DealsResponse;
 import com.eatclub.deal.model.response.PeakTimeResponse;
@@ -42,7 +42,7 @@ public class DealController {
     Integer time = null;
     // validate and convert the timeOfDay
     if (timeOfDay != null) {
-      time = convertClock(timeOfDay);
+      time = convertTo24HourClock(timeOfDay);
     }
     return dealService.getDeals(time);
   }

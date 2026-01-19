@@ -15,5 +15,12 @@ public class GlobalExceptionHandler {
 
     return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
   }
+
+  @ExceptionHandler(PeakNotFoundException.class)
+  @ResponseBody
+  public ResponseEntity<String> handlePeakNotFoundException(PeakNotFoundException ex) {
+
+    return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+  }
 }
 

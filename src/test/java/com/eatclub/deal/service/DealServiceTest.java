@@ -21,6 +21,27 @@ import static com.eatclub.deal.mock.data.DealMockData.DEAL_3_LIGHTNING;
 import static com.eatclub.deal.mock.data.DealMockData.DEAL_3_OBJECT_ID;
 import static com.eatclub.deal.mock.data.DealMockData.DEAL_3_OPEN;
 import static com.eatclub.deal.mock.data.DealMockData.DEAL_3_QTY_LEFT;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_4_CLOSE;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_4_DINE_IN;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_4_DISCOUNT;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_4_LIGHTNING;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_4_OBJECT_ID;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_4_OPEN;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_4_QTY_LEFT;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_5_CLOSE;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_5_DINE_IN;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_5_DISCOUNT;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_5_LIGHTNING;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_5_OBJECT_ID;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_5_OPEN;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_5_QTY_LEFT;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_6_CLOSE;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_6_DINE_IN;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_6_DISCOUNT;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_6_LIGHTNING;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_6_OBJECT_ID;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_6_OPEN;
+import static com.eatclub.deal.mock.data.DealMockData.DEAL_6_QTY_LEFT;
 import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_1_ADDRESS_1;
 import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_1_CLOSE;
 import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_1_NAME;
@@ -33,18 +54,29 @@ import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_2_NAME;
 import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_2_OBJECT_ID;
 import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_2_OPEN;
 import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_2_SUBURB;
+import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_3_ADDRESS_1;
+import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_3_CLOSE;
+import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_3_NAME;
+import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_3_OBJECT_ID;
+import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_3_OPEN;
+import static com.eatclub.deal.mock.data.DealMockData.RESTAURANT_3_SUBURB;
 import static com.eatclub.deal.mock.data.DealMockData.mockDeal;
 import static com.eatclub.deal.mock.data.DealMockData.mockRestaurant;
 import static com.eatclub.deal.mock.data.DealMockData.mockRestaurants;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.eatclub.deal.entity.Deal;
 import com.eatclub.deal.entity.Restaurant;
 import com.eatclub.deal.entity.Restaurants;
+import com.eatclub.deal.exception.PeakNotFoundException;
 import com.eatclub.deal.model.response.DealsResponse;
+import com.eatclub.deal.model.response.PeakTimeResponse;
 import com.eatclub.deal.restclient.RestaurantRestClient;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -171,5 +203,96 @@ class DealServiceTest {
     assertEquals(deal3.getDineIn(), result.getDeals().get(1).getDineIn());
     assertEquals(deal3.getLightning(), result.getDeals().get(1).getLightning());
     assertEquals(deal3.getQtyLeft(), result.getDeals().get(1).getQtyLeft());
+  }
+
+  @Test
+  void whenGetDealsWithTimeOfDay_thenNoDealsReturned() {
+    Deal deal1 = mockDeal(DEAL_1_OBJECT_ID, DEAL_1_DISCOUNT, DEAL_1_DINE_IN, DEAL_1_OPEN, DEAL_1_CLOSE,
+        DEAL_1_LIGHTNING, DEAL_1_QTY_LEFT);
+    Deal deal2 = mockDeal(DEAL_2_OBJECT_ID, DEAL_2_DISCOUNT, DEAL_2_DINE_IN, DEAL_2_OPEN, DEAL_2_CLOSE,
+        DEAL_2_LIGHTNING, DEAL_2_QTY_LEFT);
+    Deal deal3 = mockDeal(DEAL_3_OBJECT_ID, DEAL_3_DISCOUNT, DEAL_3_DINE_IN, DEAL_3_OPEN, DEAL_3_CLOSE,
+        DEAL_3_LIGHTNING, DEAL_3_QTY_LEFT);
+
+    Restaurant restaurant1 = mockRestaurant(RESTAURANT_1_OBJECT_ID, RESTAURANT_1_NAME, RESTAURANT_1_ADDRESS_1,
+        RESTAURANT_1_SUBURB, RESTAURANT_1_OPEN, RESTAURANT_1_CLOSE, List.of(deal1, deal2));
+    Restaurant restaurant2 = mockRestaurant(RESTAURANT_2_OBJECT_ID, RESTAURANT_2_NAME, RESTAURANT_2_ADDRESS_1,
+        RESTAURANT_2_SUBURB, RESTAURANT_2_OPEN, RESTAURANT_2_CLOSE, List.of(deal3));
+
+    Restaurants restaurants = mockRestaurants(List.of(restaurant1, restaurant2));
+
+    when(restaurantRestClient.getData(any())).thenReturn(restaurants);
+
+    DealsResponse result = dealService.getDeals(100);
+
+    // assert no deals returned
+    assertTrue(result.getDeals().isEmpty());
+  }
+
+  @Test
+  void whenGetPeakTime_thenOnlyOnePeakExistsAndReturned() {
+    Deal deal1 = mockDeal(DEAL_1_OBJECT_ID, DEAL_1_DISCOUNT, DEAL_1_DINE_IN, DEAL_1_OPEN, DEAL_1_CLOSE,
+        DEAL_1_LIGHTNING, DEAL_1_QTY_LEFT);
+    Deal deal2 = mockDeal(DEAL_2_OBJECT_ID, DEAL_2_DISCOUNT, DEAL_2_DINE_IN, DEAL_2_OPEN, DEAL_2_CLOSE,
+        DEAL_2_LIGHTNING, DEAL_2_QTY_LEFT);
+    Deal deal3 = mockDeal(DEAL_3_OBJECT_ID, DEAL_3_DISCOUNT, DEAL_3_DINE_IN, DEAL_3_OPEN, DEAL_3_CLOSE,
+        DEAL_3_LIGHTNING, DEAL_3_QTY_LEFT);
+    Deal deal4 = mockDeal(DEAL_4_OBJECT_ID, DEAL_4_DISCOUNT, DEAL_4_DINE_IN, DEAL_4_OPEN, DEAL_4_CLOSE,
+        DEAL_4_LIGHTNING, DEAL_4_QTY_LEFT);
+
+    Restaurant restaurant1 = mockRestaurant(RESTAURANT_1_OBJECT_ID, RESTAURANT_1_NAME, RESTAURANT_1_ADDRESS_1,
+        RESTAURANT_1_SUBURB, RESTAURANT_1_OPEN, RESTAURANT_1_CLOSE, List.of(deal1, deal2));
+    Restaurant restaurant2 = mockRestaurant(RESTAURANT_2_OBJECT_ID, RESTAURANT_2_NAME, RESTAURANT_2_ADDRESS_1,
+        RESTAURANT_2_SUBURB, RESTAURANT_2_OPEN, RESTAURANT_2_CLOSE, List.of(deal3, deal4));
+
+    Restaurants restaurants = mockRestaurants(List.of(restaurant1, restaurant2));
+
+    when(restaurantRestClient.getData(any())).thenReturn(restaurants);
+
+    PeakTimeResponse result = dealService.getPeakTime();
+
+    assertEquals("3:00pm", result.getPeakTimeStart());
+    assertEquals("4:00pm", result.getPeakTimeEnd());
+  }
+
+  @Test
+  void whenGetPeakTime_thenMultiplePeaksExistAndLongestPeakReturned() {
+    Deal deal1 = mockDeal(DEAL_1_OBJECT_ID, DEAL_1_DISCOUNT, DEAL_1_DINE_IN, DEAL_1_OPEN, DEAL_1_CLOSE,
+        DEAL_1_LIGHTNING, DEAL_1_QTY_LEFT);
+    Deal deal2 = mockDeal(DEAL_2_OBJECT_ID, DEAL_2_DISCOUNT, DEAL_2_DINE_IN, DEAL_2_OPEN, DEAL_2_CLOSE,
+        DEAL_2_LIGHTNING, DEAL_2_QTY_LEFT);
+    Deal deal3 = mockDeal(DEAL_3_OBJECT_ID, DEAL_3_DISCOUNT, DEAL_3_DINE_IN, DEAL_3_OPEN, DEAL_3_CLOSE,
+        DEAL_3_LIGHTNING, DEAL_3_QTY_LEFT);
+    Deal deal4 = mockDeal(DEAL_4_OBJECT_ID, DEAL_4_DISCOUNT, DEAL_4_DINE_IN, DEAL_4_OPEN, DEAL_4_CLOSE,
+        DEAL_4_LIGHTNING, DEAL_4_QTY_LEFT);
+    Deal deal5 = mockDeal(DEAL_5_OBJECT_ID, DEAL_5_DISCOUNT, DEAL_5_DINE_IN, DEAL_5_OPEN, DEAL_5_CLOSE,
+        DEAL_5_LIGHTNING, DEAL_5_QTY_LEFT);
+    Deal deal6 = mockDeal(DEAL_6_OBJECT_ID, DEAL_6_DISCOUNT, DEAL_6_DINE_IN, DEAL_6_OPEN, DEAL_6_CLOSE,
+        DEAL_6_LIGHTNING, DEAL_6_QTY_LEFT);
+
+    Restaurant restaurant1 = mockRestaurant(RESTAURANT_1_OBJECT_ID, RESTAURANT_1_NAME, RESTAURANT_1_ADDRESS_1,
+        RESTAURANT_1_SUBURB, RESTAURANT_1_OPEN, RESTAURANT_1_CLOSE, List.of(deal1, deal2));
+    Restaurant restaurant2 = mockRestaurant(RESTAURANT_2_OBJECT_ID, RESTAURANT_2_NAME, RESTAURANT_2_ADDRESS_1,
+        RESTAURANT_2_SUBURB, RESTAURANT_2_OPEN, RESTAURANT_2_CLOSE, List.of(deal3, deal4));
+    Restaurant restaurant3 = mockRestaurant(RESTAURANT_3_OBJECT_ID, RESTAURANT_3_NAME, RESTAURANT_3_ADDRESS_1,
+        RESTAURANT_3_SUBURB, RESTAURANT_3_OPEN, RESTAURANT_3_CLOSE, List.of(deal5, deal6));
+
+    Restaurants restaurants = mockRestaurants(List.of(restaurant1, restaurant2, restaurant3));
+
+    when(restaurantRestClient.getData(any())).thenReturn(restaurants);
+
+    PeakTimeResponse result = dealService.getPeakTime();
+
+    assertEquals("6:00pm", result.getPeakTimeStart());
+    assertEquals("8:00pm", result.getPeakTimeEnd());
+  }
+
+  @Test
+  void whenGetPeakTime_thenNoPeakExistsOrReturned() {
+    Restaurants restaurants = mockRestaurants(Collections.emptyList());
+
+    when(restaurantRestClient.getData(any())).thenReturn(restaurants);
+
+    assertThrows(PeakNotFoundException.class, () -> dealService.getPeakTime());
   }
 }
