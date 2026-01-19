@@ -73,6 +73,7 @@ import com.eatclub.deal.entity.Deal;
 import com.eatclub.deal.entity.Restaurant;
 import com.eatclub.deal.entity.Restaurants;
 import com.eatclub.deal.exception.PeakNotFoundException;
+import com.eatclub.deal.mapper.DealMapper;
 import com.eatclub.deal.model.response.DealsResponse;
 import com.eatclub.deal.model.response.PeakTimeResponse;
 import com.eatclub.deal.restclient.RestaurantRestClient;
@@ -80,22 +81,25 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "classpath:application.properties")
+@SpringBootTest
 class DealServiceTest {
   private DealService dealService;
 
   @MockitoBean
   private RestaurantRestClient restaurantRestClient;
 
+  @Autowired
+  private DealMapper dealMapper;
+
   @BeforeEach
   void setUp() {
-    dealService = new DealServiceImpl(restaurantRestClient);
+    dealService = new DealServiceImpl(restaurantRestClient, dealMapper);
   }
 
   @Test

@@ -7,6 +7,7 @@ import com.eatclub.deal.entity.Deal;
 import com.eatclub.deal.entity.Restaurant;
 import com.eatclub.deal.entity.Restaurants;
 import com.eatclub.deal.exception.PeakNotFoundException;
+import com.eatclub.deal.mapper.DealMapper;
 import com.eatclub.deal.model.response.DealResponse;
 import com.eatclub.deal.model.response.DealsResponse;
 import com.eatclub.deal.model.response.PeakTimeResponse;
@@ -24,12 +25,15 @@ public class DealServiceImpl implements DealService {
 
   private final RestaurantRestClient restaurantRestClient;
 
+  private final DealMapper dealMapper;
+
   @Value("${restaurants.api.url}")
   private String url;
 
   @Autowired
-  public DealServiceImpl(RestaurantRestClient restaurantRestClient) {
+  public DealServiceImpl(RestaurantRestClient restaurantRestClient, DealMapper dealMapper) {
     this.restaurantRestClient = restaurantRestClient;
+    this.dealMapper = dealMapper;
   }
 
   @Override
@@ -171,18 +175,7 @@ public class DealServiceImpl implements DealService {
    * @return            the DealResponse
    */
   private DealResponse map(Deal deal, Restaurant restaurant) {
-    return DealResponse.builder()
-        .restaurantObjectId(restaurant.getObjectId())
-        .restaurantName(restaurant.getName())
-        .restaurantClose(restaurant.getClose())
-        .restaurantOpen(restaurant.getOpen())
-        .restaurantAddress1(restaurant.getAddress1())
-        .restaurantSuburb(restaurant.getSuburb())
-        .dealObjectId(deal.getObjectId())
-        .discount(deal.getDiscount())
-        .dineIn(deal.getDineIn())
-        .lightning(deal.getLightning())
-        .qtyLeft(deal.getQtyLeft()).build();
+    return dealMapper.mapDealResponse(deal, restaurant);
   }
 
   /**
