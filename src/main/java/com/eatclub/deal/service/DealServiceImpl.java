@@ -12,13 +12,14 @@ import com.eatclub.deal.model.response.DealResponse;
 import com.eatclub.deal.model.response.DealsResponse;
 import com.eatclub.deal.model.response.PeakTimeResponse;
 import com.eatclub.deal.restclient.RestaurantRestClient;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 public class DealServiceImpl implements DealService {
@@ -47,90 +48,6 @@ public class DealServiceImpl implements DealService {
   public PeakTimeResponse getPeakTime() {
     Restaurants restaurants = restaurantRestClient.getData(url);
     return findPeakTimeWindow(restaurants);
-  }
-
-  /**
-   * This method finds the peak time window in which the highest number of deals are active within a day.
-   *
-   * @param restaurants the restaurants data
-   * @return            PeakTimeResponse object
-   */
-  private PeakTimeResponse findPeakTimeWindow(Restaurants restaurants) {
-    // create map for 24 hour slots of the day and for each deal increment a counter for the timeslots for which it is active
-    Map<Integer, Integer> availabilityByTimeslot = new TreeMap<>();
-    List<Deal> deals = restaurants.getRestaurants().stream()
-        .flatMap(restaurant -> restaurant.getDeals().stream()
-            .map(deal -> updateOpenAndCloseTime(deal, restaurant)))
-        .toList();
-    deals.forEach(deal -> {
-      List<Integer> timeRange = findActiveTimeRange(deal);
-      timeRange.forEach(t -> availabilityByTimeslot.compute(t, (k,v) -> (v == null) ? 1 : v + 1));
-    });
-
-    // Find the timeslots with the maximum count value
-    int maxValue = availabilityByTimeslot.entrySet().stream()
-        .max(Map.Entry.comparingByValue())
-        .map(Map.Entry::getValue)
-        .orElse(0);
-
-    // Filter entries with the maximum value and collect their keys
-    List<Integer> keys = availabilityByTimeslot.entrySet().stream()
-        .filter(entry -> entry.getValue() == maxValue)
-        .map(Map.Entry::getKey).toList();
-
-    // throw exception if a peak time window cannot be found
-    if (keys.isEmpty()) {
-      throw new PeakNotFoundException("Peak time window cannot be found");
-    }
-    // if only one timeslot has the max count value, then that hour is the peak
-    if (keys.size() == 1) {
-      return PeakTimeResponse.builder()
-          .peakTimeStart(convertTo12HourClock(keys.getFirst()))
-          .peakTimeEnd(convertTo12HourClock(keys.getFirst() + 100))
-          .build();
-    }
-
-    // if there are multiple timeslots with the max value, then find the longest consecutive hours to calculate the peak
-    // for example if peak hourly slots are [11am, 12pm, 3pm, 4pm, 5pm, 6pm] - the peak is from 3pm-6pm
-    Map<Integer, Integer> longestPeak = findLongestPeak(keys);
-    int maxConsecutiveHoursAtPeak = longestPeak.entrySet().stream()
-        .max(Map.Entry.comparingByValue())
-        .map(Map.Entry::getValue)
-        .orElse(0);
-
-    // Filter entries with the maximum value and collect their keys
-    List<Integer> endingHourOfLongestPeak = longestPeak.entrySet().stream()
-        .filter(entry -> entry.getValue() == maxConsecutiveHoursAtPeak)
-        .map(Map.Entry::getKey).toList();
-
-    return PeakTimeResponse.builder()
-        .peakTimeEnd(convertTo12HourClock(endingHourOfLongestPeak.getFirst() + 100))
-        .peakTimeStart(convertTo12HourClock(endingHourOfLongestPeak.getFirst() - maxConsecutiveHoursAtPeak * 100))
-        .build();
-  }
-
-  /**
-   * This method finds the longest consecutive hours that could contain the peak
-   * @param timeslots the list of 1 hour timeslots that have the highest count of deals
-   * @return          a map with consecutive timeslots grouped as the key
-   *                  and the number of consecutive hourly slots within the group as the value
-   */
-  private static Map<Integer, Integer> findLongestPeak(List<Integer> timeslots) {
-    Map<Integer, Integer> longestPeak = new TreeMap<>();
-    for (int i = 0; i < timeslots.size(); i++) {
-      // check if the next key is one hour ahead
-      int count = 0;
-      for (int j = i + 1; j < timeslots.size(); j++) {
-        if (timeslots.get(i) + 100 == timeslots.get(j)) {
-          count++;
-          i++;
-        } else {
-          break;
-        }
-      }
-      longestPeak.put(timeslots.get(i), count);
-    }
-    return longestPeak;
   }
 
   /**
@@ -195,20 +112,55 @@ public class DealServiceImpl implements DealService {
     return deal;
   }
 
-  /**
-   * returns a lit of hourly time ranges within the open and close times of a deal.
-   *
-   * @param deal  the deal object
-   * @return      List<Integer> of hourly time ranges (Integer value will be the start time of the range)
-   */
-  private List<Integer> findActiveTimeRange(Deal deal) {
-    int dealOpenTime = convertTo24HourClock(deal.getOpen());
-    int dealCloseTime = convertTo24HourClock(deal.getClose());
-    // Assuming that the times are in hourly increments
-    List<Integer> timeRange = new ArrayList<>();
-    for (int i = dealOpenTime; i < dealCloseTime; i = i + 100) {
-      timeRange.add(i);
+  public PeakTimeResponse findPeakTimeWindow(Restaurants restaurants) {
+    // throw exception if no restaurants
+    if (restaurants == null || CollectionUtils.isEmpty(restaurants.getRestaurants())) {
+      throw new PeakNotFoundException("Peak time window cannot be found");
     }
-    return timeRange;
+
+    Map<Integer, Integer> availabilityByTimeslot = new TreeMap<>();
+
+    // update the deal open, close times from the restaurant object if not set
+    List<Deal> deals = restaurants.getRestaurants().stream()
+        .flatMap(restaurant -> restaurant.getDeals().stream()
+            .map(deal -> updateOpenAndCloseTime(deal, restaurant)))
+        .toList();
+
+    // create map to store the times at which the deals open and close and the counts of deals
+    deals.forEach(deal -> createTimeEvents(availabilityByTimeslot, deal));
+
+    // find the start and end times of the peak and if there are two peaks (same count), find the longest peak
+    int maxDeals = 0;
+    int maxStartTime = 0;
+    int maxEndTime = 0;
+    int dealCount = 0;
+    boolean stop = false;
+    int timeDiff = 0;
+    TreeMap<Integer, PeakTimeResponse> peaks = new TreeMap<>();
+    for (Entry<Integer, Integer> entry : availabilityByTimeslot.entrySet()) {
+      dealCount = dealCount + entry.getValue();
+      if (dealCount >= maxDeals) {
+        maxStartTime = entry.getKey();
+        maxDeals = dealCount;
+        stop = false;
+      }
+      if (dealCount < maxDeals && !stop) {
+        maxEndTime = entry.getKey();
+        stop = true;
+        timeDiff = maxEndTime - maxStartTime;
+        peaks.put(timeDiff,
+            PeakTimeResponse.builder()
+            .peakTimeStart(convertTo12HourClock(maxStartTime))
+            .peakTimeEnd(convertTo12HourClock(maxEndTime))
+            .build());
+      }
+    }
+    // return the peak with the largest time difference between its start and end
+    return peaks.lastEntry().getValue();
+  }
+
+  private void createTimeEvents(Map<Integer, Integer> availabilityByTimeslot, Deal deal) {
+    availabilityByTimeslot.compute(convertTo24HourClock(deal.getOpen()), (k,v) -> (v == null) ? 1 : v + 1);
+    availabilityByTimeslot.compute(convertTo24HourClock(deal.getClose()), (k,v) -> (v == null) ? -1 : v - 1);
   }
 }

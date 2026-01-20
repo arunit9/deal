@@ -31,6 +31,13 @@ public class DealMockData {
   public static final String RESTAURANT_3_OPEN = "5:00pm";
   public static final String RESTAURANT_3_CLOSE = "11:00pm";
 
+  public static final String RESTAURANT_4_OBJECT_ID = "AEA567C5-F64C-3C03-FF00-E3B24909BE03";
+  public static final String RESTAURANT_4_NAME = "name4";
+  public static final String RESTAURANT_4_ADDRESS_1 = "address4";
+  public static final String RESTAURANT_4_SUBURB = "suburb4";
+  public static final String RESTAURANT_4_OPEN = "4:00pm";
+  public static final String RESTAURANT_4_CLOSE = "6:00pm";
+
   public static final String DEAL_1_OBJECT_ID = "DEA567C5-0000-3C03-FF00-E3B24909BE00";
   public static final String DEAL_1_DISCOUNT = "50";
   public static final String DEAL_1_DINE_IN = "true";
@@ -78,6 +85,30 @@ public class DealMockData {
   public static final String DEAL_6_CLOSE = "9:00pm";
   public static final String DEAL_6_LIGHTNING = "true";
   public static final String DEAL_6_QTY_LEFT = "3";
+
+  public static final String DEAL_7_OBJECT_ID = "DEA567C5-0000-3C03-FF00-E3B24909BE06";
+  public static final String DEAL_7_DISCOUNT = "10";
+  public static final String DEAL_7_DINE_IN = "false";
+  public static final String DEAL_7_OPEN = "4:30pm";
+  public static final String DEAL_7_CLOSE = "6:00pm";
+  public static final String DEAL_7_LIGHTNING = "true";
+  public static final String DEAL_7_QTY_LEFT = "3";
+
+  public static final String DEAL_8_OBJECT_ID = "DEA567C5-0000-3C03-FF00-E3B24909BE07";
+  public static final String DEAL_8_DISCOUNT = "10";
+  public static final String DEAL_8_DINE_IN = "true";
+  public static final String DEAL_8_OPEN = null;
+  public static final String DEAL_8_CLOSE = null;
+  public static final String DEAL_8_LIGHTNING = "true";
+  public static final String DEAL_8_QTY_LEFT = "5";
+
+  public static final String DEAL_9_OBJECT_ID = "DEA567C5-0000-3C03-FF00-E3B24909BE08";
+  public static final String DEAL_9_DISCOUNT = "10";
+  public static final String DEAL_9_DINE_IN = "false";
+  public static final String DEAL_9_OPEN = "4:00pm";
+  public static final String DEAL_9_CLOSE = "5:00pm";
+  public static final String DEAL_9_LIGHTNING = "true";
+  public static final String DEAL_9_QTY_LEFT = "3";
 
   public static final String TIME_PARAM = "timeOfDay";
   public static final String PEAK_TIME_START = "3:00pm";
