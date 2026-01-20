@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 
 @Service
 public class DealServiceImpl implements DealService {
+  private static final Logger logger = LoggerFactory.getLogger(DealServiceImpl.class);
 
   private final RestaurantRestClient restaurantRestClient;
 
@@ -39,6 +42,7 @@ public class DealServiceImpl implements DealService {
 
   @Override
   public DealsResponse getDeals(Integer timeOfDay) {
+    logger.debug("Executing get deals service method");
     Restaurants restaurants = restaurantRestClient.getData(url);
     List<DealResponse> deals = filterDeals(timeOfDay, restaurants);
     return DealsResponse.builder().deals(deals).build();
@@ -46,6 +50,7 @@ public class DealServiceImpl implements DealService {
 
   @Override
   public PeakTimeResponse getPeakTime() {
+    logger.debug("Executing get peak time window service method");
     Restaurants restaurants = restaurantRestClient.getData(url);
     return findPeakTimeWindow(restaurants);
   }
@@ -57,6 +62,7 @@ public class DealServiceImpl implements DealService {
    * @return            a list of DealResponse
    */
   private List<DealResponse> filterDeals(Integer timeOfDay, Restaurants restaurants) {
+    logger.debug("Filtering deals by the timeOfDay {}", timeOfDay);
     if (timeOfDay == null) {
       return restaurants.getRestaurants().stream()
           .flatMap(restaurant -> restaurant.getDeals().stream()
@@ -127,9 +133,11 @@ public class DealServiceImpl implements DealService {
         .toList();
 
     // create map to store the times at which the deals open and close and the counts of deals
+    logger.debug("Creating a timeline of deal opening and closing for all deals");
     deals.forEach(deal -> createTimeEvents(availabilityByTimeslot, deal));
 
     // find the start and end times of the peak and if there are two peaks (same count), find the longest peak
+    logger.debug("Executing the algorithm to find the peak time window");
     int maxDeals = 0;
     int maxStartTime = 0;
     int maxEndTime = 0;

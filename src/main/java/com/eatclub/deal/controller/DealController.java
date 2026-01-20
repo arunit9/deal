@@ -38,7 +38,7 @@ public class DealController {
    */
   @GetMapping
   public DealsResponse getDeals(@RequestParam(value = "timeOfDay", required = false) String timeOfDay) {
-    logger.debug("Executing of deals api");
+    logger.debug("Executing deals api");
     Integer time = null;
     // validate and convert the timeOfDay
     if (timeOfDay != null) {

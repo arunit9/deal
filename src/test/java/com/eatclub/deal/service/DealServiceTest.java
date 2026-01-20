@@ -497,6 +497,18 @@ class DealServiceTest {
     assertEquals("B5713CD0-1111-40C7-AFC3-7D46D26B00BF", result.getDeals().get(5).getDealObjectId());
   }
 
+  @Test
+  void whenTestWithSampleData_thenPeakReturned() {
+    Restaurants restaurants = readRestaurantsJson();
+
+    when(restaurantRestClient.getData(any())).thenReturn(restaurants);
+
+    PeakTimeResponse result = dealService.getPeakTime();
+
+    assertEquals("4:00pm", result.getPeakTimeStart());
+    assertEquals("9:00pm", result.getPeakTimeEnd());
+  }
+
   private Restaurants readRestaurantsJson() {
     ObjectMapper objectMapper = new ObjectMapper();
 

@@ -1,6 +1,8 @@
 package com.eatclub.deal.restclient;
 
 import com.eatclub.deal.entity.Restaurants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -10,6 +12,7 @@ import org.springframework.web.client.RestClient;
  */
 @Component
 public class RestaurantRestClient {
+  private static final Logger logger = LoggerFactory.getLogger(RestaurantRestClient.class);
   private final RestClient restClient;
 
   @Autowired
@@ -24,6 +27,7 @@ public class RestaurantRestClient {
    * @return    the response converted to a java object
    */
   public Restaurants getData(String url) {
+    logger.debug("Getting data from external restaurants api");
     return restClient.get()
         .uri(url)
         .retrieve()
