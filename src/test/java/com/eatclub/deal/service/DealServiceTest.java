@@ -104,6 +104,7 @@ import com.eatclub.deal.mapper.DealMapper;
 import com.eatclub.deal.model.response.DealsResponse;
 import com.eatclub.deal.model.response.PeakTimeResponse;
 import com.eatclub.deal.restclient.RestaurantRestClient;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,6 +113,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tools.jackson.databind.ObjectMapper;
 
 @TestPropertySource(locations = "classpath:application.properties")
 @SpringBootTest
@@ -384,5 +386,124 @@ class DealServiceTest {
     when(restaurantRestClient.getData(any())).thenReturn(restaurants);
 
     assertThrows(PeakNotFoundException.class, () -> dealService.getPeakTime());
+  }
+
+  @Test
+  void whenTestWithSampleDataAndTimeOfDay3_00pm_thenDealsReturned() {
+    Restaurants restaurants = readRestaurantsJson();
+
+    when(restaurantRestClient.getData(any())).thenReturn(restaurants);
+
+    DealsResponse result = dealService.getDeals(1500);
+
+    assertEquals(7, result.getDeals().size());
+    // "Masala Kitchen"
+    assertEquals("DEA567C5-F64C-3C03-FF00-E3B24909BE00", result.getDeals().getFirst().getRestaurantObjectId());
+    assertEquals("DEA567C5-0000-3C03-FF00-E3B24909BE00", result.getDeals().getFirst().getDealObjectId());
+
+    assertEquals("DEA567C5-F64C-3C03-FF00-E3B24909BE00", result.getDeals().get(1).getRestaurantObjectId());
+    assertEquals("DEA567C5-1111-3C03-FF00-E3B24909BE00", result.getDeals().get(1).getDealObjectId());
+
+    // "ABC Chicken"
+    assertEquals("D80263E8-FD89-2C70-FF6B-D854ADB8DB00", result.getDeals().get(2).getRestaurantObjectId());
+    assertEquals("D80263E8-0000-2C70-FF6B-D854ADB8DB00", result.getDeals().get(2).getDealObjectId());
+
+    assertEquals("D80263E8-FD89-2C70-FF6B-D854ADB8DB00", result.getDeals().get(3).getRestaurantObjectId());
+    assertEquals("D80263E8-1111-2C70-FF6B-D854ADB8DB00", result.getDeals().get(3).getDealObjectId());
+
+    // "Vrindavan"
+    assertEquals("CDB2B42A-248C-EE20-FF45-8D0A8057E200", result.getDeals().get(4).getRestaurantObjectId());
+    assertEquals("CDB2B42A-0000-EE20-FF45-8D0A8057E200", result.getDeals().get(4).getDealObjectId());
+
+    // "Kekou"
+    assertEquals("B5713CD0-91BF-40C7-AFC3-7D46D26B00BF", result.getDeals().get(5).getRestaurantObjectId());
+    assertEquals("B5713CD0-0000-40C7-AFC3-7D46D26B00BF", result.getDeals().get(5).getDealObjectId());
+
+    assertEquals("B5713CD0-91BF-40C7-AFC3-7D46D26B00BF", result.getDeals().get(6).getRestaurantObjectId());
+    assertEquals("B5713CD0-1111-40C7-AFC3-7D46D26B00BF", result.getDeals().get(6).getDealObjectId());
+  }
+
+  @Test
+  void whenTestWithSampleDataAndTimeOfDay6_00pm_thenDealsReturned() {
+    Restaurants restaurants = readRestaurantsJson();
+
+    when(restaurantRestClient.getData(any())).thenReturn(restaurants);
+
+    DealsResponse result = dealService.getDeals(1800);
+
+    assertEquals(9, result.getDeals().size());
+    // "Masala Kitchen"
+    assertEquals("DEA567C5-F64C-3C03-FF00-E3B24909BE00", result.getDeals().getFirst().getRestaurantObjectId());
+    assertEquals("DEA567C5-0000-3C03-FF00-E3B24909BE00", result.getDeals().getFirst().getDealObjectId());
+
+    assertEquals("DEA567C5-F64C-3C03-FF00-E3B24909BE00", result.getDeals().get(1).getRestaurantObjectId());
+    assertEquals("DEA567C5-1111-3C03-FF00-E3B24909BE00", result.getDeals().get(1).getDealObjectId());
+
+    // "ABC Chicken"
+    assertEquals("D80263E8-FD89-2C70-FF6B-D854ADB8DB00", result.getDeals().get(2).getRestaurantObjectId());
+    assertEquals("D80263E8-0000-2C70-FF6B-D854ADB8DB00", result.getDeals().get(2).getDealObjectId());
+
+    assertEquals("D80263E8-FD89-2C70-FF6B-D854ADB8DB00", result.getDeals().get(3).getRestaurantObjectId());
+    assertEquals("D80263E8-1111-2C70-FF6B-D854ADB8DB00", result.getDeals().get(3).getDealObjectId());
+
+    // "Vrindavan"
+    assertEquals("CDB2B42A-248C-EE20-FF45-8D0A8057E200", result.getDeals().get(4).getRestaurantObjectId());
+    assertEquals("CDB2B42A-0000-EE20-FF45-8D0A8057E200", result.getDeals().get(4).getDealObjectId());
+
+    // "Kekou"
+    assertEquals("B5713CD0-91BF-40C7-AFC3-7D46D26B00BF", result.getDeals().get(5).getRestaurantObjectId());
+    assertEquals("B5713CD0-0000-40C7-AFC3-7D46D26B00BF", result.getDeals().get(5).getDealObjectId());
+
+    assertEquals("B5713CD0-91BF-40C7-AFC3-7D46D26B00BF", result.getDeals().get(6).getRestaurantObjectId());
+    assertEquals("B5713CD0-1111-40C7-AFC3-7D46D26B00BF", result.getDeals().get(6).getDealObjectId());
+
+    // ""Gyoza Gyoza Melbourne Central""
+    assertEquals("21076F54-03E7-3115-FF09-75D07FFC7401", result.getDeals().get(7).getRestaurantObjectId());
+    assertEquals("B5913CD0-0000-40C7-AFC3-7D46D26B01BF", result.getDeals().get(7).getDealObjectId());
+
+    assertEquals("21076F54-03E7-3115-FF09-75D07FFC7401", result.getDeals().get(8).getRestaurantObjectId());
+    assertEquals("B5713CD0-1111-40C7-AFC3-7D46D26B00BF", result.getDeals().get(8).getDealObjectId());
+  }
+
+  @Test
+  void whenTestWithSampleDataAndTimeOfDay9_00pm_thenDealsReturned() {
+    Restaurants restaurants = readRestaurantsJson();
+
+    when(restaurantRestClient.getData(any())).thenReturn(restaurants);
+
+    DealsResponse result = dealService.getDeals(2100);
+
+    assertEquals(6, result.getDeals().size());
+
+    // "ABC Chicken"
+    assertEquals("D80263E8-FD89-2C70-FF6B-D854ADB8DB00", result.getDeals().get(0).getRestaurantObjectId());
+    assertEquals("D80263E8-0000-2C70-FF6B-D854ADB8DB00", result.getDeals().get(0).getDealObjectId());
+
+    assertEquals("D80263E8-FD89-2C70-FF6B-D854ADB8DB00", result.getDeals().get(1).getRestaurantObjectId());
+    assertEquals("D80263E8-1111-2C70-FF6B-D854ADB8DB00", result.getDeals().get(1).getDealObjectId());
+
+    // "Kekou"
+    assertEquals("B5713CD0-91BF-40C7-AFC3-7D46D26B00BF", result.getDeals().get(2).getRestaurantObjectId());
+    assertEquals("B5713CD0-0000-40C7-AFC3-7D46D26B00BF", result.getDeals().get(2).getDealObjectId());
+
+    assertEquals("B5713CD0-91BF-40C7-AFC3-7D46D26B00BF", result.getDeals().get(3).getRestaurantObjectId());
+    assertEquals("B5713CD0-1111-40C7-AFC3-7D46D26B00BF", result.getDeals().get(3).getDealObjectId());
+
+    // ""Gyoza Gyoza Melbourne Central""
+    assertEquals("21076F54-03E7-3115-FF09-75D07FFC7401", result.getDeals().get(4).getRestaurantObjectId());
+    assertEquals("B5913CD0-0000-40C7-AFC3-7D46D26B01BF", result.getDeals().get(4).getDealObjectId());
+
+    assertEquals("21076F54-03E7-3115-FF09-75D07FFC7401", result.getDeals().get(5).getRestaurantObjectId());
+    assertEquals("B5713CD0-1111-40C7-AFC3-7D46D26B00BF", result.getDeals().get(5).getDealObjectId());
+  }
+
+  private Restaurants readRestaurantsJson() {
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    // Load the test JSON file
+    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("restaurants.json");
+
+    // Read the JSON and map it to a Restaurants object
+    return objectMapper.readValue(inputStream, Restaurants.class);
   }
 }

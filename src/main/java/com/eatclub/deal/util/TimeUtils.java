@@ -37,7 +37,7 @@ public class TimeUtils {
    */
   public static String convertTo12HourClock(int time) {
     try {
-      String pattern = null;
+      String pattern;
       if (time == 0) {
         pattern = "H";
       } else if (time > 0 && time < 10) {

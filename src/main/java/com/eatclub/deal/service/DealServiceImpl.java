@@ -81,7 +81,7 @@ public class DealServiceImpl implements DealService {
   private boolean filter(Restaurant restaurant, Deal deal, int time) {
     int dealOpenTime = convertTo24HourClock(deal.getOpen() != null ? deal.getOpen() : restaurant.getOpen());
     int dealCloseTime = convertTo24HourClock(deal.getClose() != null ? deal.getClose() : restaurant.getClose());
-    return time >= dealOpenTime && time <= dealCloseTime;
+    return time >= dealOpenTime && time < dealCloseTime;
   }
 
   /**
